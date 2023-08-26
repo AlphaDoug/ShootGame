@@ -118,24 +118,6 @@ export namespace GameDef{
             console.error("total size: " + (this.UsingCount + this.CacheStackCount))
         }
     }
-    export type WeaponAction = {
-        /* 射击动画 */
-        shootAnimation: string
-        /* 瞄准射击动画 */
-        aimShootAnimation: string
-        /* 换弹动画 */
-        reloadAnimation: string
-        /* 上膛动画 */
-        loadAnimation: string
-        /* 装备武器动画 */
-        equipAnimation: string
-        /* 卸载武器动画 */
-        unequipAnimation: string
-        /* 持有姿态 */
-        holdStance: string
-        /* 瞄准姿态 */
-        aimStance: string
-    }
     /* 重力 */
     export const GRAVITAIONAL_ACCELERATION: number = 9.8
     /* 最大子弹速度 */
@@ -148,90 +130,4 @@ export namespace GameDef{
     export const CASING_LIFE: number = 1
     /* 弹壳抛射位置偏移 */
     export const CASING_OFFSET: Type.Vector = new Type.Vector(8, 5, 10)
-    /**武器配置结构体 */
-    export type WeaponConfig = {
-        /**男性动作 */
-        maleAction :WeaponAction
-    
-        /**女性动作 */
-        femaleAction :WeaponAction
-    
-        /**武器icon */
-        WaponIcon:string
-    
-        /**武器名称 */
-        weaponName :string
-    
-        /**装备插槽 */
-        equipmentSlot :string
-    
-        /**装备视角偏移 */
-        equipmentCameraOffset :Type.Vector
-    
-        /**装备FOV */
-        equipmentCameraFov :number
-    
-        /**瞄准视角偏移 */
-        aimCameraOffset  :Type.Vector
-    
-        /**瞄准FOV */
-        aimCameraFov :number
-    
-        /**瞄准聚焦速度 */
-        aimSpeed :number
-    
-        /**武器基础伤害 */
-        damage :number
-    
-        /**最大射程 */
-        shootRange :number
-    
-        /**弹药速度 */
-        ammoSpeed :number
-    
-        /**碰撞半径 */
-        detectRadius :number
-    
-        /**重力系数 */
-        gravityScale :number
-    
-        /**伤害范围 */
-        hurtRadius :number
-    
-        /**自动换弹 */
-        isAutoReload: boolean
-    
-        /**辅助瞄准 */
-        isAutoLock: boolean 
-    
-        /**默认UI */
-        isDefaultUI: boolean
-    
-        /**弹壳弹出 */
-        isWeaponHaveCasing:boolean
-    
-        /**开火阻挡距离 */
-        fireBlockDistance: number
-    
-        /**弹药数量(-1为无限) */
-        totalAmmo: number 
-    
-        /**弹夹为空是否销毁武器 */
-        isEmptyToDestroy: boolean 
-    
-        /**支持替换弹夹 */
-        isSupportRepAmmo: boolean 
-    
-        /**模型旋转速度 */
-        rotateSpeed: number 
-    
-        /**持有时限（s）（-1为永久持有） */
-        keepTime: number 
-    
-        /**瞄准镜 */
-        isWeaponHaveScope: boolean
-        
-        /**自动销毁 */
-        isAutoDestroy:boolean
-    }
 }
