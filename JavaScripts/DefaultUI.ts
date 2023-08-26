@@ -1,28 +1,28 @@
 ﻿@UI.UICallOnly('')
 export default class UIDefault extends UI.UIBehavior {
-	Character: Gameplay.Character;
+	Character: Gameplay.Character
 	/* 解析资源ID列表 */
     private resolveString(assetIds: string): string[] {
-        let assetIdArray: string[] = new Array<string>();
-        let assetId: string = "";
-        let s = assetIds.split("");
+        let assetIdArray: string[] = new Array<string>()
+        let assetId: string = ""
+        let s = assetIds.split("")
         for (let a of s) {
             if (a == ",") {
-                assetIdArray.push(assetId);
-                assetId = "";
+                assetIdArray.push(assetId)
+                assetId = ""
             } else {
-                assetId += a;
+                assetId += a
             }
         }
         if (assetId) {
-            assetIdArray.push(assetId);
+            assetIdArray.push(assetId)
         }
-        return assetIdArray;
+        return assetIdArray
     }
 
 	/* 初始化资源 */
 	private initAssets(assetIds: string): void {
-		let assetIdArray = this.resolveString(assetIds);
+		let assetIdArray = this.resolveString(assetIds)
 		for (let element of assetIdArray) {
 			Util.AssetUtil.asyncDownloadAsset(element)
 		}
@@ -34,7 +34,7 @@ export default class UIDefault extends UI.UIBehavior {
 		//初始化动画资源 
 		this.initAssets("95777,61245")
 		//设置能否每帧触发onUpdate
-		this.canUpdate = false;
+		this.canUpdate = false
 		
 		//找到对应的跳跃按钮
         const JumpBtn = this.uiWidgetBase.findChildByPath('RootCanvas/Button_Jump') as UI.Button
@@ -44,46 +44,46 @@ export default class UIDefault extends UI.UIBehavior {
 		//点击跳跃按钮,异步获取人物后执行跳跃
         JumpBtn.onPressed.add(()=>{
 			if (this.Character) {
-				this.Character.jump();
+				this.Character.jump()
 			} else {
 				Gameplay.asyncGetCurrentPlayer().then((player) => {
-					this.Character = player.character;
+					this.Character = player.character
 					//角色执行跳跃功能
-					this.Character.jump();
-				});
+					this.Character.jump()
+				})
 			}
 		})	
 
 		//点击攻击按钮,异步获取人物后执行攻击动作
         AttackBtn.onPressed.add(()=>{
 				Gameplay.asyncGetCurrentPlayer().then((player) => {
-					this.Character = player.character;
+					this.Character = player.character
 					//让动画只在上半身播放
-					let anim1 = player.character.loadAnimation("61245");
-					anim1.slot = Gameplay.AnimSlot.Upper;
+					let anim1 = player.character.loadAnimation("61245")
+					anim1.slot = Gameplay.AnimSlot.Upper
 					//角色执行攻击动作
 					if(anim1.isPlaying){
 						return
 					}else{
-						anim1.play();
+						anim1.play()
 					}
-				});
+				})
 		})	
 
 		//点击交互按钮,异步获取人物后执行交互动作
         InteractBtn.onPressed.add(()=>{
 				Gameplay.asyncGetCurrentPlayer().then((player) => {
-					this.Character = player.character;
+					this.Character = player.character
 					//让动画只在上半身播放
-					let anim2 = player.character.loadAnimation("95777");
-					anim2.slot = Gameplay.AnimSlot.Upper;
+					let anim2 = player.character.loadAnimation("95777")
+					anim2.slot = Gameplay.AnimSlot.Upper
 					//角色执行交互动作
 					if(anim2.isPlaying){
 						return
 					}else{
-						anim2.play();
+						anim2.play()
 					}
-				});
+				})
 
 		})	
 		
@@ -140,21 +140,21 @@ export default class UIDefault extends UI.UIBehavior {
 	 * 如果没有处理，那么这个UI界面就无法接收这次Touch后续的Move和End事件
 	 */
 	//protected onTouchStarted(InGemotry :UI.Geometry,InPointerEvent:UI.PointerEvent) :UI.EventReply{
-	//	return UI.EventReply.unHandled; //UI.EventReply.handled
+	//	return UI.EventReply.unHandled //UI.EventReply.handled
 	//}
 
 	/**
 	 * 手指或则鼠标再UI界面上移动时
 	 */
 	//protected onTouchMoved(InGemotry :UI.Geometry,InPointerEvent:UI.PointerEvent) :UI.EventReply{
-	//	return UI.EventReply.unHandled; //UI.EventReply.handled
+	//	return UI.EventReply.unHandled //UI.EventReply.handled
 	//}
 
 	/**
 	 * 手指或则鼠标离开UI界面时
 	 */
 	//protected OnTouchEnded(InGemotry :UI.Geometry,InPointerEvent:UI.PointerEvent) :UI.EventReply{
-	//	return UI.EventReply.unHandled; //UI.EventReply.handled
+	//	return UI.EventReply.unHandled //UI.EventReply.handled
 	//}
 
 	/**
@@ -163,7 +163,7 @@ export default class UIDefault extends UI.UIBehavior {
 	 * 返回一次生成的拖拽事件 newDragDrop可以生成一次事件
 	 */
 	//protected onDragDetected(InGemotry :UI.Geometry,InPointerEvent:UI.PointerEvent):UI.DragDropOperation {
-	//	return this.newDragDrop(null);
+	//	return this.newDragDrop(null)
 	//}
 
 	/**
@@ -171,7 +171,7 @@ export default class UIDefault extends UI.UIBehavior {
 	 * 返回true的话表示处理了这次事件，不会再往这个UI的下一层的UI继续冒泡这个事件
 	 */
 	//protected onDragOver(InGemotry :UI.Geometry,InDragDropEvent:UI.PointerEvent,InDragDropOperation:UI.DragDropOperation):boolean {
-	//	return true;
+	//	return true
 	//}
 
 	/**
@@ -179,7 +179,7 @@ export default class UIDefault extends UI.UIBehavior {
 	 * 返回true的话表示处理了这次事件，不会再往这个UI的下一层的UI继续冒泡这个事件
 	 */
 	//protected onDrop(InGemotry :UI.Geometry,InDragDropEvent:UI.PointerEvent,InDragDropOperation:UI.DragDropOperation):boolean {
-	//	return true;
+	//	return true
 	//}
 
 	/**
