@@ -8,7 +8,6 @@
 */
 
 import { PrefabEvent } from "./PrefabEvent"
-import { PrefabEvtUI } from "./PrefabEvtUI"
 /**
  * MapEx(可序列化)
 */
