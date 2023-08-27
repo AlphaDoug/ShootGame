@@ -6,6 +6,7 @@ import WeaponUI from "./WeaponUI"
 import { GameConfig } from "../Config/GameConfig"
 import { PrefabEvent } from "../../prefabEvent/PrefabEvent"
 import { IActionElement } from "../Config/Action"
+import { IWeaponResourcesElement } from "../Config/WeaponResources"
 
 @Core.Class
 export default class WeaponDriver extends Core.Script {
@@ -22,6 +23,9 @@ export default class WeaponDriver extends Core.Script {
 
 	/* 动作资源 */
 	weaponAction: IActionElement = null
+
+	/**武器使用的资产配置 */
+	weaponResources : IWeaponResourcesElement
 
 	/* 武器UI */
 	weaponUI: WeaponUI = null
@@ -130,7 +134,7 @@ export default class WeaponDriver extends Core.Script {
 
 	private _rotateRotation: Rotation = Rotation.zero
 
-	private preloadAssets: string
+	private preloadAssets: Array<string>
 
 	/* 击中回调函数 */
 	clientOnHit: (hitResult: Core.GameObject[] | Gameplay.HitResult[], attackPlayer: number, isObj: boolean) => void
@@ -142,6 +146,34 @@ export default class WeaponDriver extends Core.Script {
 		this.config = GameConfig.WeaponConfig.getElement(id)
 		this.isAutoReload = this.config.isAutoReload
 		this.totalAmmo = this.config.totalAmmo
+		this.weaponResources = GameConfig.WeaponResources.getElement(this.config.resourcesId)	
+		let maleAction = GameConfig.Action.getElement(this.config.maleAction)
+		let femaleAction = GameConfig.Action.getElement(this.config.femaleAction)
+
+		for (const key in maleAction) {
+			if (Object.prototype.hasOwnProperty.call(maleAction, key)) {
+				const element = maleAction[key];
+				if (key != "id") {
+					Util.AssetUtil.asyncDownloadAsset(element)
+				}
+			}
+		}
+		for (const key in femaleAction) {
+			if (Object.prototype.hasOwnProperty.call(maleAction, key)) {
+				const element = maleAction[key];
+				if (key != "id") {
+					Util.AssetUtil.asyncDownloadAsset(element)
+				}
+			}
+		}
+		for (const key in this.weaponResources) {
+			if (Object.prototype.hasOwnProperty.call(maleAction, key)) {
+				const element = maleAction[key];
+				if (key != "id") {
+					Util.AssetUtil.asyncDownloadAsset(element)
+				}
+			}
+		}
 	}
 	/** 当脚本被实例后，会在第一帧更新前调用此函数 */
 	protected async onStart() {
@@ -378,7 +410,7 @@ export default class WeaponDriver extends Core.Script {
 	}
 	/* 播放音效 */
 	private playSound(sound: Gameplay.Sound): void {
-		sound.volumeMultiplier = WeaponDriver.soundVolume
+		sound.volume = WeaponDriver.soundVolume
 		sound.play()
 	}
 
@@ -624,16 +656,10 @@ export default class WeaponDriver extends Core.Script {
 		}
 	}
 
-
-	/* 初始化资源 */
-	private initAssets(assetIds: string): void {
-		let assetIdArray = this.resolveString(assetIds)
-		for (let element of assetIdArray) {
-			Util.AssetUtil.asyncDownloadAsset(element).then((value: boolean) => {
-				if (value) {
-					Util.AssetUtil.loadAsset(element)
-				}
-			})
+	/* 下载并初始化资源 */
+	private initAssets(assetIds: Array<string>): void {
+		for (let element of assetIds) {
+			Util.AssetUtil.asyncDownloadAsset(element)
 		}
 	}
 	/* 服务端初始化方法 */
@@ -861,64 +887,74 @@ export default class WeaponDriver extends Core.Script {
 
 
 	/* 客户端初始化根弹药实体 */
-	private clientInitAmmoEntityRoot(): void {
-		this.ammoEntityRoot = this.weaponObj.getChildByName("ammoEntityRoot") as Core.GameObject
+	private async clientInitAmmoEntityRoot() {
+		this.ammoEntityRoot = await GameObject.asyncSpawn({ guid : this.weaponResources.ammo })
+		this.ammoEntityRoot.parent = this.weaponObj
 		this.ammoPool = new GameDef.SimpleObjectPool<Core.GameObject>(this.instanceAmmo.bind(this), (obj: Core.GameObject) => { obj.destroy() }, (obj: Core.GameObject) => { obj.setVisibility(Type.PropertyStatus.Off) })
 	}
 
 	/* 客户端初始化弹壳实体 */
-	private clientInitCasingEntity(): void {
-		this.casingEntity = this.weaponObj.getChildByName("casingEntity") as Core.GameObject
+	private async clientInitCasingEntity() {
+		this.casingEntity = await GameObject.asyncSpawn({ guid : this.weaponResources.casing })
+		this.casingEntity.parent = this.weaponObj
 		this.casingPool = new GameDef.SimpleObjectPool<Core.GameObject>(this.instanceCasing.bind(this), (obj: Core.GameObject) => { obj.destroy() }, (obj: Core.GameObject) => { obj.setVisibility(Type.PropertyStatus.Off) })
 	}
 
 	/* 客户端初始化击中角色特效 */
-	private clientInitHitCharaEffect(): void {
-		this.hitCharaEffect = this.weaponObj.getChildByName("hitCharaEffect") as Gameplay.Particle
+	private async clientInitHitCharaEffect() {
+		this.hitCharaEffect = await GameObject.asyncSpawn({ guid : this.weaponResources.hitRoleEffect })
+		this.hitCharaEffect.parent = this.weaponObj
 		this.hitCharaEffectPool = new GameDef.SimpleObjectPool<Gameplay.Particle>(this.instanceHitCharaEffect.bind(this), (particle: Gameplay.Particle) => { particle.destroy() }, (particle: Gameplay.Particle) => { particle.detachFromGameObject(); particle.forceStop() })
 	}
 
 	/* 客户端初始化击中物体特效 */
-	private clientInitHitEffect(): void {
-		this.hitEffect = this.weaponObj.getChildByName("hitEffect") as Gameplay.Particle
+	private async clientInitHitEffect() {
+		this.hitEffect = await GameObject.asyncSpawn({ guid : this.weaponResources.hitOtherEffect })
+		this.hitEffect.parent = this.weaponObj
 		this.hitEffectPool = new GameDef.SimpleObjectPool<Gameplay.Particle>(this.instanceHitEffect.bind(this), (particle: Gameplay.Particle) => { particle.destroy() }, (particle: Gameplay.Particle) => { particle.detachFromGameObject(); particle.forceStop() })
 	}
 
 	/* 客户端初始化开火特效 */
-	private clientInitFireEffect(): void {
-		this.fireEffect = this.weaponObj.getChildByName("fireEffect") as Gameplay.Particle
+	private async clientInitFireEffect() {
+		this.fireEffect = await GameObject.asyncSpawn({ guid : this.weaponResources.fireEffect })
+		this.fireEffect.parent = this.weaponObj
 	}
 
 	/* 客户端初始化开火音效 */
-	private clientInitFireSound(): void {
-		this.fireSound = this.weaponObj.getChildByName("fireSound") as Gameplay.Sound
+	private async clientInitFireSound() {
+		this.fireSound = await GameObject.asyncSpawn({ guid : this.weaponResources.fireSound })
+		this.fireSound.parent = this.weaponObj
 	}
 
 	/* 客户端初始化换弹音效 */
-	private clientInitReloadSound(): void {
-		this.reloadSound = this.weaponObj.getChildByName("reloadSound") as Gameplay.Sound
+	private async clientInitReloadSound() {
+		this.reloadSound = await GameObject.asyncSpawn({ guid : this.weaponResources.reloadSound })
+		this.reloadSound.parent = this.weaponObj
 	}
 
 	/* 客户端初始化上膛音效 */
-	private clientInitLoadSound(): void {
-		this.loadSound = this.weaponObj.getChildByName("loadSound") as Gameplay.Sound
+	private async clientInitLoadSound() {
+		this.loadSound = await GameObject.asyncSpawn({ guid : this.weaponResources.loadSound })
+		this.loadSound.parent = this.weaponObj
 	}
 
 	/* 客户端初始化瞄准音效 */
-	private clientInitAimSound(): void {
-		this.aimSound = this.weaponObj.getChildByName("aimSound") as Gameplay.Sound
+	private async clientInitAimSound() {
+		this.aimSound = await GameObject.asyncSpawn({ guid : this.weaponResources.aimSound })
+		this.aimSound.parent = this.weaponObj
 	}
 
 	/* 客户端初始化根击中角色音效 */
-	private clientInitHitCharaSound(): void {
-		this.hitCharaSound = this.weaponObj.getChildByName("hitCharaSound") as Gameplay.Sound
+	private async clientInitHitCharaSound() {
+		this.hitCharaSound = await GameObject.asyncSpawn({ guid : this.weaponResources.hitRoleSound })
+		this.hitCharaSound.parent = this.weaponObj
 		this.hitCharaSoundPool = new GameDef.SimpleObjectPool<Gameplay.Sound>(this.instanceHitCharaSound.bind(this), (sound: Gameplay.Sound) => { sound.destroy() }, (sound: Gameplay.Sound) => { sound.stop() })
-
 	}
 
 	/* 客户端初始化根击中物体音效 */
-	private clientInitHitSound(): void {
-		this.hitSound = this.weaponObj.getChildByName("hitSound") as Gameplay.Sound
+	private async clientInitHitSound() {
+		this.hitSound = await GameObject.asyncSpawn({ guid : this.weaponResources.hitOtherSound })
+		this.hitSound.parent = this.weaponObj
 		this.hitSoundPool = new GameDef.SimpleObjectPool<Gameplay.Sound>(this.instanceHitSound.bind(this), (sound: Gameplay.Sound) => { sound.destroy() }, (sound: Gameplay.Sound) => { sound.stop() })
 	}
 

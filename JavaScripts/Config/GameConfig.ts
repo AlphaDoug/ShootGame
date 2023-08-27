@@ -1,6 +1,7 @@
 import {ConfigBase, IElementBase} from "./ConfigBase";
 import {ActionConfig} from "./Action";
 import {WeaponConfigConfig} from "./WeaponConfig";
+import {WeaponResourcesConfig} from "./WeaponResources";
 
 export class GameConfig{
 	private static configMap:Map<string, ConfigBase<IElementBase>> = new Map();
@@ -21,4 +22,5 @@ export class GameConfig{
 	}
 	public static get Action():ActionConfig{ return this.getConfig(ActionConfig) };
 	public static get WeaponConfig():WeaponConfigConfig{ return this.getConfig(WeaponConfigConfig) };
+	public static get WeaponResources():WeaponResourcesConfig{ return this.getConfig(WeaponResourcesConfig) };
 }

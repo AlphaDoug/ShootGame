@@ -1,5 +1,5 @@
 import { ConfigBase, IElementBase } from "./ConfigBase";
-const EXCELDATA:Array<Array<any>> = [["id","name","maleAction","femaleAction","weaponIcon","equipmentSlot","equipmentCameraOffset","equipmentCameraFov","aimCameraOffset","aimCameraFov","aimSpeed","damage","shootRange","ammoSpeed","detectRadius","gravityScale","hurtRadius","isAutoReload","isAutoLock","isDefaultUI","isWeaponHaveCasing","fireBlockDistance","totalAmmo","isEmptyToDestroy","isSupportRepAmmo","rotateSpeed","keepTime","isWeaponHaveScope","isAutoDestroy"],[100,"测试手枪",1,2,23234,"Right_Hand","0|0|0",90,"0|0|0",60,1,1,1,1,1,10,1,1,1,1,1,1,12,1,1,12,12,1,1]];
+const EXCELDATA:Array<Array<any>> = [["id","name","maleAction","femaleAction","weaponIcon","equipmentSlot","equipmentCameraOffset","resourcesId","useClass","equipmentCameraFov","aimCameraOffset","aimCameraFov","aimSpeed","damage","shootRange","ammoSpeed","detectRadius","gravityScale","hurtRadius","isAutoReload","isAutoLock","isDefaultUI","isWeaponHaveCasing","fireBlockDistance","totalAmmo","isEmptyToDestroy","isSupportRepAmmo","rotateSpeed","keepTime","isWeaponHaveScope","isAutoDestroy"],[100,"测试手枪",1,2,23234,"Right_Hand","0|0|0",1,"Sniper",90,"0|0|0",60,1,1,1,1,1,10,1,1,1,1,1,1,12,1,1,12,12,1,1]];
 export interface IWeaponConfigElement extends IElementBase{
  	/**枪械ID*/
 	id:number
@@ -15,6 +15,10 @@ export interface IWeaponConfigElement extends IElementBase{
 	equipmentSlot:string
 	/**装备视角偏移*/
 	equipmentCameraOffset:Type.Vector
+	/**枪械使用资产ID*/
+	resourcesId:number
+	/**枪械类*/
+	useClass:string
 	/**FOV*/
 	equipmentCameraFov:number
 	/**瞄准视角偏移*/
