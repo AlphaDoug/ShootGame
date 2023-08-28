@@ -1,5 +1,5 @@
 import { ConfigBase, IElementBase } from "./ConfigBase";
-const EXCELDATA:Array<Array<any>> = [["id","sex","shootAnimation","aimShootAnimation","reloadAnimation","loadAnimation","equipAnimation","unequipAnimation","holdStance","aimStance"],[1,"male",80484,80483,80479,80482,80585,80481,94258,94261],[2,"female","49094","49095","80479","80482","80585","80481","49096","49098"]];
+const EXCELDATA:Array<Array<any>> = [["id","sex","shootAnimation","aimShootAnimation","reloadAnimation","loadAnimation","equipAnimation","unequipAnimation","holdStance","aimStance"],["","","","","","","","","",""],[1,"male","80484","80483","80479","80482","80585","80481","94258","94261"],[2,"female","49094","49095","80479","80482","80585","80481","49096","49098"]];
 export interface IActionElement extends IElementBase{
  	/**动画ID*/
 	id:number

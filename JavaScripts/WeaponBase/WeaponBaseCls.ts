@@ -10,6 +10,9 @@ import { IWeaponResourcesElement } from "../Config/WeaponResources"
 
 @Core.Class
 export default class WeaponDriver extends Core.Script {
+
+	@Core.Property({ hideInEditor: true, replicated: true, onChanged: "onIdChanged" })
+	private id : number
 	/** */
 	public config: IWeaponConfigElement
 	/**是否完成初始化 */
@@ -141,39 +144,11 @@ export default class WeaponDriver extends Core.Script {
 
 	/* 阻挡标识变化回调函数 */
 	clientOnBlockChange: (isBlock: boolean) => void
-	/**枪械的初始化 */
+	/**枪械的初始化,服务端调用 */
+	@Core.Function(Core.Server)
 	public InitWeapon(id: number): void {
-		this.config = GameConfig.WeaponConfig.getElement(id)
-		this.isAutoReload = this.config.isAutoReload
-		this.totalAmmo = this.config.totalAmmo
-		this.weaponResources = GameConfig.WeaponResources.getElement(this.config.resourcesId)	
-		let maleAction = GameConfig.Action.getElement(this.config.maleAction)
-		let femaleAction = GameConfig.Action.getElement(this.config.femaleAction)
-
-		for (const key in maleAction) {
-			if (Object.prototype.hasOwnProperty.call(maleAction, key)) {
-				const element = maleAction[key];
-				if (key != "id") {
-					Util.AssetUtil.asyncDownloadAsset(element)
-				}
-			}
-		}
-		for (const key in femaleAction) {
-			if (Object.prototype.hasOwnProperty.call(maleAction, key)) {
-				const element = maleAction[key];
-				if (key != "id") {
-					Util.AssetUtil.asyncDownloadAsset(element)
-				}
-			}
-		}
-		for (const key in this.weaponResources) {
-			if (Object.prototype.hasOwnProperty.call(maleAction, key)) {
-				const element = maleAction[key];
-				if (key != "id") {
-					Util.AssetUtil.asyncDownloadAsset(element)
-				}
-			}
-		}
+		this.id = id
+		this.onIdChanged()
 	}
 	/** 当脚本被实例后，会在第一帧更新前调用此函数 */
 	protected async onStart() {
@@ -182,7 +157,7 @@ export default class WeaponDriver extends Core.Script {
 		}
 		this.useUpdate = true
 		this.weaponObj = this.gameObject as Gameplay.HotWeapon
-		this.initAssets(this.preloadAssets)
+		//this.initAssets(this.preloadAssets)
 		if (this.weaponObj) {
 			if (Util.SystemUtil.isClient()) {
 				this.clientInit()
@@ -328,10 +303,10 @@ export default class WeaponDriver extends Core.Script {
 		}
 
 		if (this.weaponUI) {
-			//this.weaponUI.changeBullet(this.weaponObj.fireComponent.currentBulletSize, this.config.totalAmmo)
+			this.weaponUI.changeBullet(this.weaponObj.fireComponent.currentBulletSize, this.config.totalAmmo)
 			if (this.config.keepTime != -1) {
 				this._restTime -= dt
-				//this.weaponUI.setTimeText(this._restTime, this.config.keepTime)
+				this.weaponUI.setTimeText(this._restTime, this.config.keepTime)
 				if (this._restTime <= 0) {
 					this.unEquip()
 				}
@@ -460,7 +435,7 @@ export default class WeaponDriver extends Core.Script {
 		this.weaponObj.breakReload()
 		this.weaponObj.destroy()
 		this.weaponObj.unequipHotWeapon()
-		//UI.UIManager.instance.hide(WeaponUI)
+		UI.UIManager.instance.hide(WeaponUI)
 		this.weaponUI = null
 		this.chara.animationStance = this.tempanimationStance
 		this.chara.playAnimation(this.weaponAction.unequipAnimation)
@@ -470,7 +445,7 @@ export default class WeaponDriver extends Core.Script {
 		this.camera.cameraFOV = this.tempcameraFOV
 		this.camera.targetArmLength = this.temptargetArmLength
 		if (this.config.isAutoDestroy) {
-			//UI.UIManager.instance.destroyUI(WeaponUI)
+			UI.UIManager.instance.destroyUI(WeaponUI)
 			this.weaponObj = null
 			let destroyInterval = setInterval(() => {
 				if (this.ammoArray.length == 0 && this.casingArray.length == 0) {
@@ -664,8 +639,14 @@ export default class WeaponDriver extends Core.Script {
 	}
 	/* 服务端初始化方法 */
 	private serverInit() {
+		this.clientOnIDChanged(this.id)
 		this.serverInitDelegate()
-
+		this.serverCreateMesh()
+	}
+	/**服务端根据配置创建枪械的模型 */
+	private async serverCreateMesh(){
+		let mesh = await GameObject.asyncSpawn({ guid : this.weaponResources.weaponMesh, replicates : true})
+		mesh.parent = this.weaponObj
 	}
 
 	/* 服务端初始化回调函数 */
@@ -772,6 +753,7 @@ export default class WeaponDriver extends Core.Script {
 			this.player = player
 			this.chara = this.player.character
 			this.camera = this.chara.cameraSystem
+			
 			this.clientInitWeaponEntityRoot()
 			this.clientInitPickUpTrigger()
 			this.clientInitAmmoEntityRoot()
@@ -795,8 +777,9 @@ export default class WeaponDriver extends Core.Script {
 	}
 
 	/* 客户端初始化拾取触发器 */
-	private clientInitPickUpTrigger(): void {
-		this.pickUpTrigger = this.weaponObj.getChildByName("pickUpTrigger") as Gameplay.Trigger
+	private async clientInitPickUpTrigger() {
+		this.pickUpTrigger = await GameObject.asyncSpawn({guid : "Trigger"})
+		this.pickUpTrigger.parent = this.weaponObj
 		if (this.pickUpTrigger) {
 			this.pickUpTrigger.onEnter.add((chara: Gameplay.Character) => {
 				// 如果是角色，销毁触发器，装备武器，换弹，修改姿态，设置玩家武器map，派发装备事件
@@ -810,7 +793,7 @@ export default class WeaponDriver extends Core.Script {
 
 	/* 服务端装备 */
 	@Core.Function(Core.Server)
-	private serverEquip(playerID: number): void {
+	public serverEquip(playerID: number): void {
 		let player = Gameplay.getPlayer(playerID)
 		// 如果装备时玩家为空则返回
 		if (player == null || !this.weaponObj) return
@@ -1310,4 +1293,46 @@ export default class WeaponDriver extends Core.Script {
 		return assetIdArray
 	}
 
+	@Core.Function(Core.Client)
+	private clientOnIDChanged(id:number){
+		this.id = id;
+		this.onIdChanged()
+	}
+
+	private onIdChanged(){
+		console.log('onIdChanged')
+		this.config = GameConfig.WeaponConfig.getElement(this.id)
+		this.isAutoReload = this.config.isAutoReload
+		this.totalAmmo = this.config.totalAmmo
+		this.weaponResources = GameConfig.WeaponResources.getElement(this.config.resourcesId)	
+		let maleAction = GameConfig.Action.getElement(this.config.maleAction)
+		let femaleAction = GameConfig.Action.getElement(this.config.femaleAction)
+		if(this.isRunningClient()){
+			for (const key in maleAction) {
+				if (Object.prototype.hasOwnProperty.call(maleAction, key)) {
+					const element = maleAction[key];
+					if (key != "id") {
+						Util.AssetUtil.asyncDownloadAsset(element)
+					}
+				}
+			}
+			for (const key in femaleAction) {
+				if (Object.prototype.hasOwnProperty.call(maleAction, key)) {
+					const element = maleAction[key];
+					if (key != "id") {
+						Util.AssetUtil.asyncDownloadAsset(element)
+					}
+				}
+			}
+			for (const key in this.weaponResources) {
+				if (Object.prototype.hasOwnProperty.call(maleAction, key)) {
+					const element = maleAction[key];
+					if (key != "id") {
+						Util.AssetUtil.asyncDownloadAsset(element)
+					}
+				}
+			}
+		}
+		this.hasInit = true
+	}
 }

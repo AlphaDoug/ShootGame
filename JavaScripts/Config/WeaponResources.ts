@@ -1,8 +1,10 @@
 import { ConfigBase, IElementBase } from "./ConfigBase";
-const EXCELDATA:Array<Array<any>> = [["id","hitRoleEffect","hitOtherEffect","fireEffect","ammo","casing","fireSound","reloadSound","loadSound","aimSound","hitRoleSound","hitOtherSound"],[1,1,2,3,4,2,5,6,7,8,9,10]];
+const EXCELDATA:Array<Array<any>> = [["id","weaponMesh","hitRoleEffect","hitOtherEffect","fireEffect","ammo","casing","fireSound","reloadSound","loadSound","aimSound","hitRoleSound","hitOtherSound"],["","","","","","","","","","","","",""],[1,"43704","1","2","3","4","2","5","6","7","8","9","10"]];
 export interface IWeaponResourcesElement extends IElementBase{
  	/**资产ID*/
 	id:number
+	/**武器模型*/
+	weaponMesh:string
 	/**命中角色特效*/
 	hitRoleEffect:string
 	/**命中物体特效*/
