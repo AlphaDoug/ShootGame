@@ -1,4 +1,4 @@
-﻿import WeaponUI_Generate from "../ui-generate/WeaponUI_generate";
+import WeaponUI_Generate from "../ui-generate/WeaponUI_generate";
 import WeaponDriver from "./WeaponBaseCls";
 
 export default class WeaponUI extends WeaponUI_Generate{

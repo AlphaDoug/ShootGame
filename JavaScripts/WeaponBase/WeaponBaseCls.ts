@@ -25,7 +25,7 @@ export default class WeaponDriver extends Core.Script {
 	weaponAction: IActionElement = null
 
 	/**武器使用的资产配置 */
-	weaponResources : IWeaponResourcesElement
+	weaponResources : IWeaponResourcesElement = null
 
 	/* 武器UI */
 	weaponUI: WeaponUI = null
